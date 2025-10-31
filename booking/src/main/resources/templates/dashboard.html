@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ласкаво просимо | Beauty Salon</title>
+    <link rel="stylesheet" href="/css/beauty-salon.css">
+</head>
+<body>
+    <div class="dashboard-card">
+        <img src="https://www.emerce.nl/content/uploads/2019/08/beauty-Shutter.jpg" 
+             alt="Наш салон краси" class="salon-image" />
+        
+        <div class="content">
+            <h1>Ласкаво просимо!</h1>
+            <p>Ви у найкращому салоні краси міста. Тут дбають про вашу красу та комфорт.</p>
+            
+            <div class="user-greeting">
+                Вітаємо, <span th:text="${loggedInUser?.name} ?: 'Гість'">Гість</span>!
+            </div>
+            
+            <div class="footer">
+                Ми завжди раді вас бачити
+            </div>
+        </div>
+    </div>
+</body>
+</html>
