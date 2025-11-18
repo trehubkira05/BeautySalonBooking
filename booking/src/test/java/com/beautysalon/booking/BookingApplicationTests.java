@@ -3,6 +3,7 @@ package com.beautysalon.booking;
 import com.beautysalon.booking.entity.Booking;
 import com.beautysalon.booking.entity.BookingStatus;
 import com.beautysalon.booking.entity.Master;
+import com.beautysalon.booking.entity.Service;
 import com.beautysalon.booking.entity.User;
 import com.beautysalon.booking.repository.IMasterRepository;
 import com.beautysalon.booking.repository.IServiceRepository;
@@ -21,9 +22,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@Transactional
+@Transactional 
 class BookingApplicationTests {
-
+    
     @Test
     void testSuccessfulStateFlow() {
         System.out.println("--- Тест ЛР4: testSuccessfulStateFlow ---");
@@ -51,7 +52,7 @@ class BookingApplicationTests {
     private IMasterRepository masterRepository;
     @Autowired
     private IServiceRepository serviceRepository;
-
+    
     private UUID validClientId;
     private UUID validMasterId;
     private UUID validServiceId;
@@ -60,44 +61,41 @@ class BookingApplicationTests {
     @BeforeEach
     void setUpRealDatabaseData() {
         User client = new User("Test Client", "client@test.com", "pass", "123");
-        userRepository.save(client);
+        userRepository.saveAndFlush(client);
         this.validClientId = client.getUserId();
 
         Master master = new Master(client, "Test Spec", 5);
-        masterRepository.save(master);
+        masterRepository.saveAndFlush(master);
         this.validMasterId = master.getMasterId();
 
-        com.beautysalon.booking.entity.Service service =
+        com.beautysalon.booking.entity.Service service = 
             new com.beautysalon.booking.entity.Service("Test Service", "Desc", 100, 30);
-        serviceRepository.save(service);
+        serviceRepository.saveAndFlush(service);
         this.validServiceId = service.getServiceId();
-
-        userRepository.flush();
-        masterRepository.flush();
-        serviceRepository.flush();
     }
 
     @Test
     void testChainOfResponsibility_Failure_RealDB() {
         System.out.println("--- Тест ЛР5: testChainOfResponsibility_Failure (Real DB) ---");
-
-        UUID invalidClientId = UUID.randomUUID();
-
+        
+        UUID invalidClientId = UUID.randomUUID(); 
+        
         Exception ex = assertThrows(RuntimeException.class, () -> {
             bookingService.createBooking(invalidClientId, validMasterId, validServiceId, time);
         });
+
         assertEquals("Клієнт не знайдений.", ex.getMessage());
         System.out.println("--- Тест ЛР5: testChainOfResponsibility_Failure [УСПІХ] ---");
     }
-
+    
     @Test
     void testChainOfResponsibility_Success_RealDB() {
         System.out.println("--- Тест ЛР5: testChainOfResponsibility_Success (Real DB) ---");
-
+        
         assertDoesNotThrow(() -> {
-            bookingService.createBooking(validClientId, validServiceId, validMasterId, time);
+            bookingService.createBooking(validClientId, validMasterId, validServiceId, time);
         });
-
+        
         System.out.println("--- Тест ЛР5: testChainOfResponsibility_Success [УСПІХ] ---");
     }
 }

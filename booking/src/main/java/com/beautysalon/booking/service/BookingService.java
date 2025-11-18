@@ -16,14 +16,17 @@ import java.util.UUID;
 public class BookingService {
     private final IBookingRepository bookingRepository;
     private final IBookingValidationHandler validationChain;
+    private final BookingEventPublisher eventPublisher;
 
     public BookingService(
             IBookingRepository bookingRepository,
             IUserRepository userRepository,
             IServiceRepository serviceRepository,
-            IMasterRepository masterRepository) {
+            IMasterRepository masterRepository,
+            BookingEventPublisher eventPublisher) {
 
         this.bookingRepository = bookingRepository;
+        this.eventPublisher = eventPublisher;
 
         IBookingValidationHandler clientHandler = new ClientExistenceHandler(userRepository);
         IBookingValidationHandler masterHandler = new MasterExistenceHandler(masterRepository);
@@ -31,16 +34,13 @@ public class BookingService {
 
         clientHandler.setNext(masterHandler);
         masterHandler.setNext(serviceHandler);
-
         this.validationChain = clientHandler;
     }
 
     public Booking createBooking(UUID clientId, UUID serviceId, UUID masterId, LocalDateTime desiredDateTime) {
         BookingValidationContext context = new BookingValidationContext(
                 clientId, masterId, serviceId, desiredDateTime);
-
         validationChain.handle(context);
-
         if (context.hasError()) {
             throw new RuntimeException(context.getErrorMessage());
         }
@@ -54,35 +54,45 @@ public class BookingService {
         newBooking.setTotalPrice(context.getService().getPrice());
         newBooking.setStatus(BookingStatus.PENDING);
 
-        return bookingRepository.save(newBooking);
+        Booking savedBooking = bookingRepository.save(newBooking);
+        eventPublisher.notifyObservers(savedBooking);
+        return savedBooking;
     }
 
     public Booking confirmBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
         booking.confirm();
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        eventPublisher.notifyObservers(savedBooking);
+        return savedBooking;
     }
 
     public Booking payBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
         booking.pay();
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        eventPublisher.notifyObservers(savedBooking);
+        return savedBooking;
     }
 
     public Booking completeBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
         booking.complete();
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        eventPublisher.notifyObservers(savedBooking);
+        return savedBooking;
     }
 
     public Booking cancelBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
         booking.cancel();
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        eventPublisher.notifyObservers(savedBooking);
+        return savedBooking;
     }
 
     public List<Booking> getBookingsByClient(UUID clientId) {
