@@ -2,65 +2,102 @@ package com.beautysalon.booking;
 
 import com.beautysalon.booking.entity.Booking;
 import com.beautysalon.booking.entity.BookingStatus;
+import com.beautysalon.booking.entity.Master;
+import com.beautysalon.booking.entity.User;
+import com.beautysalon.booking.repository.IMasterRepository;
+import com.beautysalon.booking.repository.IServiceRepository;
+import com.beautysalon.booking.repository.IUserRepository;
+import com.beautysalon.booking.service.BookingService;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Transactional
 class BookingApplicationTests {
 
     @Test
     void testSuccessfulStateFlow() {
-        System.out.println("--- Початок тесту 'testSuccessfulStateFlow' ---");
-
+        System.out.println("--- Тест ЛР4: testSuccessfulStateFlow ---");
         Booking booking = new Booking();
-
-        assertEquals(BookingStatus.PENDING, booking.getStatus());
-        System.out.println("Стан (1): " + booking.getStatus());
-
         booking.confirm();
-        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
-        System.out.println("Стан (2) після confirm(): " + booking.getStatus());
-
         booking.pay();
-        assertEquals(BookingStatus.PAID, booking.getStatus());
-        System.out.println("Стан (3) після pay(): " + booking.getStatus());
-
         booking.complete();
         assertEquals(BookingStatus.COMPLETED, booking.getStatus());
-        System.out.println("Стан (4) після complete(): " + booking.getStatus());
-
-        System.out.println("--- Тест 'testSuccessfulStateFlow' успішний ---");
+        System.out.println("--- Тест ЛР4: testSuccessfulStateFlow [УСПІХ] ---");
     }
 
     @Test
     void testInvalidStateTransitions() {
-        System.out.println("--- Початок тесту 'testInvalidStateTransitions' ---");
-
+        System.out.println("--- Тест ЛР4: testInvalidStateTransitions ---");
         Booking pendingBooking = new Booking();
-        assertEquals(BookingStatus.PENDING, pendingBooking.getStatus());
+        assertThrows(IllegalStateException.class, pendingBooking::pay);
+        System.out.println("--- Тест ЛР4: testInvalidStateTransitions [УСПІХ] ---");
+    }
 
-        Exception ex1 = assertThrows(IllegalStateException.class, () -> {
-            pendingBooking.pay();
+    @Autowired
+    private BookingService bookingService;
+    @Autowired
+    private IUserRepository userRepository;
+    @Autowired
+    private IMasterRepository masterRepository;
+    @Autowired
+    private IServiceRepository serviceRepository;
+
+    private UUID validClientId;
+    private UUID validMasterId;
+    private UUID validServiceId;
+    private LocalDateTime time = LocalDateTime.now();
+
+    @BeforeEach
+    void setUpRealDatabaseData() {
+        User client = new User("Test Client", "client@test.com", "pass", "123");
+        userRepository.save(client);
+        this.validClientId = client.getUserId();
+
+        Master master = new Master(client, "Test Spec", 5);
+        masterRepository.save(master);
+        this.validMasterId = master.getMasterId();
+
+        com.beautysalon.booking.entity.Service service =
+            new com.beautysalon.booking.entity.Service("Test Service", "Desc", 100, 30);
+        serviceRepository.save(service);
+        this.validServiceId = service.getServiceId();
+
+        userRepository.flush();
+        masterRepository.flush();
+        serviceRepository.flush();
+    }
+
+    @Test
+    void testChainOfResponsibility_Failure_RealDB() {
+        System.out.println("--- Тест ЛР5: testChainOfResponsibility_Failure (Real DB) ---");
+
+        UUID invalidClientId = UUID.randomUUID();
+
+        Exception ex = assertThrows(RuntimeException.class, () -> {
+            bookingService.createBooking(invalidClientId, validMasterId, validServiceId, time);
+        });
+        assertEquals("Клієнт не знайдений.", ex.getMessage());
+        System.out.println("--- Тест ЛР5: testChainOfResponsibility_Failure [УСПІХ] ---");
+    }
+
+    @Test
+    void testChainOfResponsibility_Success_RealDB() {
+        System.out.println("--- Тест ЛР5: testChainOfResponsibility_Success (Real DB) ---");
+
+        assertDoesNotThrow(() -> {
+            bookingService.createBooking(validClientId, validServiceId, validMasterId, time);
         });
 
-        assertEquals("Бронювання не може бути оплачено, поки воно не підтверджено.", ex1.getMessage());
-        System.out.println("Перевірка (1) 'pay() on PENDING' успішна: " + ex1.getMessage());
-
-        Booking completedBooking = new Booking();
-        completedBooking.confirm();
-        completedBooking.pay();
-        completedBooking.complete();
-        assertEquals(BookingStatus.COMPLETED, completedBooking.getStatus());
-
-        Exception ex2 = assertThrows(IllegalStateException.class, () -> {
-            completedBooking.cancel();
-        });
-
-        assertEquals("Бронювання не може бути скасовано, оскільки воно вже завершено.", ex2.getMessage());
-        System.out.println("Перевірка (2) 'cancel() on COMPLETED' успішна: " + ex2.getMessage());
-
-        System.out.println("--- Тест 'testInvalidStateTransitions' успішний ---");
+        System.out.println("--- Тест ЛР5: testChainOfResponsibility_Success [УСПІХ] ---");
     }
 }

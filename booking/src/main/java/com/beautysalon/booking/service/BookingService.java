@@ -5,6 +5,7 @@ import com.beautysalon.booking.repository.IBookingRepository;
 import com.beautysalon.booking.repository.IMasterRepository;
 import com.beautysalon.booking.repository.IServiceRepository;
 import com.beautysalon.booking.repository.IUserRepository;
+import com.beautysalon.booking.validation.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,36 +14,44 @@ import java.util.UUID;
 
 @Service
 public class BookingService {
-
     private final IBookingRepository bookingRepository;
-    private final IUserRepository userRepository;
-    private final IServiceRepository serviceRepository;
-    private final IMasterRepository masterRepository;
+    private final IBookingValidationHandler validationChain;
 
-    public BookingService(IBookingRepository bookingRepository, IUserRepository userRepository, IServiceRepository serviceRepository, IMasterRepository masterRepository) {
+    public BookingService(
+            IBookingRepository bookingRepository,
+            IUserRepository userRepository,
+            IServiceRepository serviceRepository,
+            IMasterRepository masterRepository) {
+
         this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
-        this.serviceRepository = serviceRepository;
-        this.masterRepository = masterRepository;
+
+        IBookingValidationHandler clientHandler = new ClientExistenceHandler(userRepository);
+        IBookingValidationHandler masterHandler = new MasterExistenceHandler(masterRepository);
+        IBookingValidationHandler serviceHandler = new ServiceExistenceHandler(serviceRepository);
+
+        clientHandler.setNext(masterHandler);
+        masterHandler.setNext(serviceHandler);
+
+        this.validationChain = clientHandler;
     }
 
     public Booking createBooking(UUID clientId, UUID serviceId, UUID masterId, LocalDateTime desiredDateTime) {
-        User client = userRepository.findById(clientId)
-                .orElseThrow(() -> new RuntimeException("Клієнт не знайдений."));
+        BookingValidationContext context = new BookingValidationContext(
+                clientId, masterId, serviceId, desiredDateTime);
 
-        com.beautysalon.booking.entity.Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Послугу не знайдено."));
+        validationChain.handle(context);
 
-        Master master = masterRepository.findById(masterId)
-                .orElseThrow(() -> new RuntimeException("Майстер не знайдений."));
+        if (context.hasError()) {
+            throw new RuntimeException(context.getErrorMessage());
+        }
 
         Booking newBooking = new Booking();
-        newBooking.setClient(client);
-        newBooking.setMaster(master);
-        newBooking.setService(service);
-        newBooking.setBookingDate(desiredDateTime.toLocalDate());
-        newBooking.setBookingTime(desiredDateTime.toLocalTime());
-        newBooking.setTotalPrice(service.getPrice());
+        newBooking.setClient(context.getClient());
+        newBooking.setMaster(context.getMaster());
+        newBooking.setService(context.getService());
+        newBooking.setBookingDate(context.getDateTime().toLocalDate());
+        newBooking.setBookingTime(context.getDateTime().toLocalTime());
+        newBooking.setTotalPrice(context.getService().getPrice());
         newBooking.setStatus(BookingStatus.PENDING);
 
         return bookingRepository.save(newBooking);
@@ -51,36 +60,28 @@ public class BookingService {
     public Booking confirmBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
-
         booking.confirm();
-
         return bookingRepository.save(booking);
     }
 
     public Booking payBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
-
         booking.pay();
-
         return bookingRepository.save(booking);
     }
 
     public Booking completeBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
-
         booking.complete();
-
         return bookingRepository.save(booking);
     }
 
     public Booking cancelBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
-
         booking.cancel();
-
         return bookingRepository.save(booking);
     }
 
