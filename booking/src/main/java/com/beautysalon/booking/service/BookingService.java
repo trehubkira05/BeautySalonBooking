@@ -6,6 +6,7 @@ import com.beautysalon.booking.repository.IMasterRepository;
 import com.beautysalon.booking.repository.IServiceRepository;
 import com.beautysalon.booking.repository.IUserRepository;
 import com.beautysalon.booking.validation.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,16 +18,19 @@ public class BookingService {
     private final IBookingRepository bookingRepository;
     private final IBookingValidationHandler validationChain;
     private final BookingEventPublisher eventPublisher;
+    private final PaymentFacade paymentFacade;
 
     public BookingService(
             IBookingRepository bookingRepository,
             IUserRepository userRepository,
             IServiceRepository serviceRepository,
             IMasterRepository masterRepository,
-            BookingEventPublisher eventPublisher) {
+            BookingEventPublisher eventPublisher,
+            @Lazy PaymentFacade paymentFacade) {
 
         this.bookingRepository = bookingRepository;
         this.eventPublisher = eventPublisher;
+        this.paymentFacade = paymentFacade;
 
         IBookingValidationHandler clientHandler = new ClientExistenceHandler(userRepository);
         IBookingValidationHandler masterHandler = new MasterExistenceHandler(masterRepository);
@@ -68,15 +72,6 @@ public class BookingService {
         return savedBooking;
     }
 
-    public Booking payBooking(UUID bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
-        booking.pay();
-        Booking savedBooking = bookingRepository.save(booking);
-        eventPublisher.notifyObservers(savedBooking);
-        return savedBooking;
-    }
-
     public Booking completeBooking(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено."));
@@ -93,6 +88,10 @@ public class BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         eventPublisher.notifyObservers(savedBooking);
         return savedBooking;
+    }
+
+    public void notifyPaymentObservers(Booking booking) {
+        eventPublisher.notifyObservers(booking);
     }
 
     public List<Booking> getBookingsByClient(UUID clientId) {
