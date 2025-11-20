@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Користувачі | Адмін</title>
+    <link rel="stylesheet" href="/css/beauty-salon.css">
+    <style>
+        .admin-table-header { background-color: #343a40; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;}
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #e9ecef; color: #495057; }
+        h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }
+        .role-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; color: white; }
+        .badge-master { background-color: #6f42c1; }
+        .badge-client { background-color: #28a745; }
+        .btn-action {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-confirm {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-card" style="width: 90%; max-width: 1200px;">
+        <div class="content">
+            <div class="admin-table-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h1>Управління користувачами</h1>
+                    <a href="/auth/admin/dashboard" class="btn-primary" style="background-color: #6c757d; text-decoration: none;">← Назад</a>
+                </div>
+            </div>
+
+            <h2>Список Майстрів (Master)</h2>
+            <table th:if="${not #lists.isEmpty(masters)}">
+                <thead>
+                    <tr>
+                        <th>Ім'я</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Роль</th>
+                        <th>Дія</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${masters}">
+                        <td th:text="${m.name}" style="font-weight: bold;"></td>
+                        <td th:text="${m.email}"></td>
+                        <td th:text="${m.phone}"></td>
+                        <td><span class="role-badge badge-master">MASTER</span></td>
+                        <td>
+                            <form th:if="${m.role.name() == 'MASTER' and m.role.name() != 'ADMIN'}"
+                                  th:action="@{/web/admin/users/{id}/change-role(id=${m.userId}, role='CLIENT')}" method="post" onsubmit="return confirm('Ви впевнені, що хочете понизити Майстра ' + [[${m.name}]] + ' до Клієнта?');">
+                                <button type="submit" class="btn-action btn-cancel" style="padding: 5px 10px;">
+                                    Понизити до CLIENT
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2>Список Клієнтів (Client)</h2>
+            <table th:if="${not #lists.isEmpty(clients)}">
+                <thead>
+                    <tr>
+                        <th>Ім'я</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Роль</th>
+                        <th>Дія</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${clients}">
+                        <td th:text="${c.name}"></td>
+                        <td th:text="${c.email}"></td>
+                        <td th:text="${c.phone}"></td>
+                        <td><span class="role-badge badge-client">CLIENT</span></td>
+                        <td>
+                            <form th:if="${c.role.name() == 'CLIENT' and c.role.name() != 'ADMIN'}"
+                                  th:action="@{/web/admin/users/{id}/change-role(id=${c.userId}, role='MASTER')}" method="post" onsubmit="return confirm('Ви впевнені, що хочете підвищити Клієнта ' + [[${c.name}]] + ' до Майстра?');">
+                                <button type="submit" class="btn-action btn-confirm" style="padding: 5px 10px;">
+                                    Підвищити до MASTER
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
