@@ -1,5 +1,6 @@
 package com.beautysalon.booking.entity;
 
+import com.beautysalon.booking.composite.BookableItem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "services")
-public class Service {
+public class Service implements BookableItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.CHAR)
@@ -19,6 +20,8 @@ public class Service {
     private String name;
     private String description;
     private double price;
+
+    @Column(name = "duration_minutes")
     private int durationMinutes;
 
     @ManyToOne
@@ -29,7 +32,6 @@ public class Service {
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    // Конструктори
     public Service() {}
 
     public Service(String name, String description, double price, int durationMinutes) {
@@ -39,21 +41,27 @@ public class Service {
         this.durationMinutes = durationMinutes;
     }
 
-    // Геттери та Сеттери
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public double getPrice() {
+        return price;
+    }
+
+    @Override
+    public int getDurationMinutes() {
+        return durationMinutes;
+    }
+
     public UUID getServiceId() {
         return serviceId;
     }
 
     public void setServiceId(UUID serviceId) {
         this.serviceId = serviceId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -64,16 +72,12 @@ public class Service {
         this.description = description;
     }
 
-    public double getPrice() {
-        return price;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setPrice(double price) {
         this.price = price;
-    }
-
-    public int getDurationMinutes() {
-        return durationMinutes;
     }
 
     public void setDurationMinutes(int durationMinutes) {
