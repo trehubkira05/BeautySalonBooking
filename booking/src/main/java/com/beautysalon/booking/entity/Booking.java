@@ -1,6 +1,6 @@
 package com.beautysalon.booking.entity;
 
-import com.beautysalon.booking.state.*;
+import com.beautysalon.booking.state.*; 
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -35,23 +35,28 @@ public class Booking {
     private LocalDate bookingDate;
     private LocalTime bookingTime;
 
-    @Enumerated(EnumType.STRING)
+    // === Зміни для State Pattern ===
+
+    @Enumerated(EnumType.STRING) 
     @Column(name = "status")
     private BookingStatus status;
 
-    @Transient
+    @Transient 
     private BookingState state;
+
 
     private double totalPrice;
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
 
+     
     public Booking() {
         this.status = BookingStatus.PENDING;
-        initState();
+        initState(); 
     }
 
+    
     @PostLoad
     private void onPostLoad() {
         initState();
@@ -63,26 +68,27 @@ public class Booking {
         }
         
         this.state = switch (status) {
-            case PENDING    -> PendingState.getInstance();
+            case PENDING   -> PendingState.getInstance();
             case CONFIRMED -> ConfirmedState.getInstance();
-            case PAID       -> PaidState.getInstance();
+            case PAID      -> PaidState.getInstance();
             case COMPLETED -> CompletedState.getInstance();
             case CANCELLED -> CancelledState.getInstance();
         };
     }
 
+    
     public void confirm() {
         state.confirm(this);
     }
-
+    
     public void pay() {
         state.pay(this);
     }
-
+    
     public void cancel() {
         state.cancel(this);
     }
-
+    
     public void complete() {
         state.complete(this);
     }
@@ -106,7 +112,7 @@ public class Booking {
     
     public void setStatus(BookingStatus status) {
         this.status = status;
-        initState();
+        initState(); 
     }
     
     public double getTotalPrice() { return totalPrice; }

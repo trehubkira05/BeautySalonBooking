@@ -8,6 +8,6 @@ public class HomeController {
 
     @GetMapping("/")
     public String redirectToLogin() {
-        return "redirect:/auth/login"; // ← ПРОСТО І ЧІТКО
+        return "redirect:/auth/login"; 
     }
 }

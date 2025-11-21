@@ -104,14 +104,12 @@ public class AuthController {
     }
     // === ДАШБОРД КЛІЄНТА (ОНОВЛЕНО) ===
     @GetMapping("/home")
-    @Transactional // <-- ЦЯ АНОТАЦІЯ ВИПРАВЛЯЄ ПОМИЛКУ 500
+    @Transactional 
     public String showHomePage(HttpSession session, Model model) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         
         if (loggedInUser != null) {
-            // Отримуємо свіжого користувача. 
-            // Завдяки @Transactional, всі його зв'язки (bookings, master, service) 
-            // будуть доступні для Thymeleaf.
+            
             User freshUser = userService.findByEmail(loggedInUser.getEmail()).orElse(loggedInUser);
             
             model.addAttribute("user", freshUser);
@@ -135,7 +133,10 @@ public class AuthController {
 
     // === ДАШБОРД МАЙСТРА ===
     @GetMapping("/master/dashboard")
-    public String showMasterDashboard(HttpSession session, Model model) {
+    public String showMasterDashboard(
+            HttpSession session,
+            Model model,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         
         if (loggedInUser != null && loggedInUser.getRole() == Role.MASTER) {
@@ -145,7 +146,6 @@ public class AuthController {
                 
                 List<Booking> bookings = bookingService.getBookingsByMaster(masterId); 
                 
-                // 2. Календарна логіка (статична, поточний місяць)
                 YearMonth currentMonth = YearMonth.now();
                 List<ScheduleDayDto> monthlySchedule = masterService.getMonthlyScheduleView(masterId, currentMonth);
 
@@ -153,6 +153,8 @@ public class AuthController {
                 model.addAttribute("bookings", bookings);
                 model.addAttribute("monthlySchedule", monthlySchedule);
                 model.addAttribute("currentMonth", currentMonth);
+                model.addAttribute("prevMonth", currentMonth.minusMonths(1));
+                model.addAttribute("nextMonth", currentMonth.plusMonths(1));
                 
                 return "master_dashboard"; 
                 
@@ -163,5 +165,10 @@ public class AuthController {
         } else {
             return "redirect:/auth/login";
         }
+    }
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
     }
 }
