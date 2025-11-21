@@ -3,6 +3,7 @@ package com.beautysalon.booking.service;
 import com.beautysalon.booking.entity.*;
 import com.beautysalon.booking.repository.IBookingRepository;
 import com.beautysalon.booking.repository.IMasterRepository;
+import com.beautysalon.booking.repository.IScheduleRepository;
 import com.beautysalon.booking.repository.IServiceRepository;
 import com.beautysalon.booking.repository.IUserRepository;
 import com.beautysalon.booking.validation.*;
@@ -12,10 +13,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 public class BookingService {
@@ -24,60 +26,99 @@ public class BookingService {
     private final BookingEventPublisher eventPublisher;
     private final PaymentFacade paymentFacade;
     private final IServiceRepository serviceRepository;
+    private final IScheduleRepository scheduleRepository;
 
     public BookingService(
             IBookingRepository bookingRepository,
             IUserRepository userRepository,
             IServiceRepository serviceRepository,
             IMasterRepository masterRepository,
+            IScheduleRepository scheduleRepository,
             BookingEventPublisher eventPublisher,
             @Lazy PaymentFacade paymentFacade) {
         this.bookingRepository = bookingRepository;
         this.serviceRepository = serviceRepository;
+        this.scheduleRepository = scheduleRepository;
         this.eventPublisher = eventPublisher;
         this.paymentFacade = paymentFacade;
 
-        // === РУЧНА ЗБІРКА ЛАНЦЮЖКА (Chain of Responsibility) ===
-        // 1. Створюємо кожну ланку
         IBookingValidationHandler clientHandler = new ClientExistenceHandler(userRepository);
         IBookingValidationHandler masterHandler = new MasterExistenceHandler(masterRepository);
         IBookingValidationHandler serviceHandler = new ServiceExistenceHandler(serviceRepository);
-        IBookingValidationHandler compatibilityHandler = new MasterServiceCompatibilityHandler(); // <-- НОВА ЛАНКА
+        IBookingValidationHandler compatibilityHandler = new MasterServiceCompatibilityHandler();
 
-        // 2. "Вручну" з'єднуємо ланки в ланцюжок
         clientHandler.setNext(masterHandler);
         masterHandler.setNext(serviceHandler);
-        serviceHandler.setNext(compatibilityHandler); // <-- ДОДАЄМО НОВУ ЛАНКУ СЮДИ
-
-        // 3. Зберігаємо посилання на *початок* ланцюжка
+        serviceHandler.setNext(compatibilityHandler);
         this.validationChain = clientHandler;
-        // === Кінець збірки ланцюжка ===
+    }
+
+    private Set<LocalTime> getAllPossibleSlots() {
+        Set<LocalTime> allSlots = new HashSet<>();
+        for (int hour = 8; hour < 20; hour++) {
+            allSlots.add(LocalTime.of(hour, 0));
+        }
+        return allSlots;
+    }
+
+    public Set<LocalTime> getOccupiedSlots(UUID masterId, LocalDate date) {
+        List<Booking> bookings = bookingRepository.findByMasterMasterIdAndBookingDate(masterId, date);
+        Set<LocalTime> occupiedSlots = new HashSet<>();
+
+        for (Booking booking : bookings) {
+            if (booking.getStatus() == BookingStatus.CANCELLED) {
+                continue;
+            }
+
+            int durationMinutes = booking.getService().getDurationMinutes();
+            LocalTime startTime = booking.getBookingTime().truncatedTo(ChronoUnit.HOURS);
+            int numberOfSlots = durationMinutes / 60;
+            for (int i = 0; i < numberOfSlots; i++) {
+                occupiedSlots.add(startTime.plusHours(i));
+            }
+        }
+
+        List<Schedule> masterSchedules = scheduleRepository.findByMasterMasterIdAndWorkDate(masterId, date);
+
+        if (masterSchedules.isEmpty()) {
+            return getAllPossibleSlots();
+        }
+
+        Schedule schedule = masterSchedules.get(0);
+        LocalTime workStart = schedule.getStartTime();
+        LocalTime workEnd = schedule.getEndTime();
+
+        Set<LocalTime> allPossibleSlots = getAllPossibleSlots();
+
+        for (LocalTime slot : allPossibleSlots) {
+            int minServiceDurationHours = 1;
+            LocalTime slotEnd = slot.plusHours(minServiceDurationHours);
+            if (slot.isBefore(workStart) || slotEnd.isAfter(workEnd)) {
+                occupiedSlots.add(slot);
+            }
+        }
+
+        return occupiedSlots;
+    }
+
+    public List<LocalDate> getMasterWorkingDates(UUID masterId) {
+        return scheduleRepository.findDistinctWorkDatesByMasterId(masterId);
     }
 
     public Booking createBooking(UUID clientId, UUID serviceId, UUID masterId, LocalDateTime desiredDateTime) {
-        BookingValidationContext context = new BookingValidationContext(
-                clientId, masterId, serviceId, desiredDateTime);
+        BookingValidationContext context = new BookingValidationContext(clientId, masterId, serviceId, desiredDateTime);
         validationChain.handle(context);
         if (context.hasError()) {
             throw new RuntimeException(context.getErrorMessage());
         }
-        System.out.println("\n--- [Composite Demo] ---");
-        BookableItem service1 = context.getService();
-        System.out.println("Клієнт бронює (Листок): " + service1.getName());
-        System.out.println("Ціна: " + service1.getPrice());
-        System.out.println("Тривалість: " + service1.getDurationMinutes() + " хв.");
 
+        BookableItem service1 = context.getService();
         ServicePackage spaPackage = new ServicePackage("SPA-пакет 'Релакс'");
         spaPackage.addItem(service1);
-
         com.beautysalon.booking.entity.Service service2 =
-             new com.beautysalon.booking.entity.Service("Миття голови", "", 150, 15);
+                new com.beautysalon.booking.entity.Service("Миття голови", "", 150, 15);
         spaPackage.addItem(service2);
 
-        System.out.println("\nКлієнт бронює (Пакет): " + spaPackage.getName());
-        System.out.println("Ціна пакету (Composite): " + spaPackage.getPrice());
-        System.out.println("Тривалість (Composite): " + spaPackage.getDurationMinutes() + " хв.");
-        System.out.println("--- [Composite Demo End] ---\n");
         Booking newBooking = new Booking();
         newBooking.setClient(context.getClient());
         newBooking.setMaster(context.getMaster());
@@ -119,10 +160,6 @@ public class BookingService {
         return savedBooking;
     }
 
-    public void notifyPaymentObservers(Booking booking) {
-        eventPublisher.notifyObservers(booking);
-    }
-
     public List<Booking> getBookingsByClient(UUID clientId) {
         return bookingRepository.findByClientUserIdOrderByBookingDateDesc(clientId);
     }
@@ -146,4 +183,15 @@ public class BookingService {
     public Optional<com.beautysalon.booking.entity.Service> findServiceById(UUID serviceId) {
         return serviceRepository.findById(serviceId);
     }
+
+    public void notifyPaymentObservers(Booking booking) {
+        eventPublisher.notifyObservers(booking);
+    }
+
+    public Optional<Booking> getBookingByMasterAndDateTime(UUID masterId, LocalDate date, LocalTime time) {
+        return bookingRepository.findByMasterMasterIdAndBookingDateAndBookingTime(masterId, date, time);
+    }
+    public Optional<Booking> findBookingById(UUID id) {
+        return bookingRepository.findById(id);
+    }    
 }
