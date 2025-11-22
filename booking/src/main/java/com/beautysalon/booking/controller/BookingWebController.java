@@ -1,5 +1,6 @@
 package com.beautysalon.booking.controller;
 
+import com.beautysalon.booking.dto.MasterOptionDto;
 import com.beautysalon.booking.entity.Booking;
 import com.beautysalon.booking.entity.User;
 import com.beautysalon.booking.entity.Master;
@@ -13,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/web/bookings")
 public class BookingWebController {
+
     private final BookingService bookingService;
     private final PaymentFacade paymentFacade;
     private final IServiceRepository serviceRepository;
@@ -75,8 +78,7 @@ public class BookingWebController {
             .map(s -> s.getServiceId())
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Не вдалося знайти конкретну послугу, прив'язану до обраного майстра."));
-
-        try {
+            try {
             bookingService.createBooking(user.getUserId(), finalServiceId, masterId, finalDateTime, allInclusive);
             return "redirect:/auth/home";
         } catch (Exception e) {
@@ -89,6 +91,7 @@ public class BookingWebController {
             return "booking_create";
         }
     }
+
     @PostMapping("/{id}/confirm")
     public String confirmBooking(@PathVariable UUID id, HttpServletRequest request) {
         bookingService.confirmBooking(id);
@@ -127,7 +130,6 @@ public class BookingWebController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Помилка скасування: " + e.getMessage());
         }
-
         String referer = request.getHeader("Referer");
         return "redirect:" + (referer != null ? referer : "/auth/home");
     }
@@ -145,6 +147,7 @@ public class BookingWebController {
 
         return "receipt";
     }
+
     @PostMapping("/{id}/review")
     public String addReview(
             @PathVariable UUID id,
@@ -159,7 +162,6 @@ public class BookingWebController {
         }
         return "redirect:/auth/home";
     }
-
     @GetMapping("/masters/by-service/{serviceId}")
     @ResponseBody
     public ResponseEntity<List<Master>> getMastersByService(@PathVariable UUID serviceId) {
@@ -175,18 +177,29 @@ public class BookingWebController {
 
     @GetMapping("/masters/by-service-name/{serviceName}")
     @ResponseBody
-    public ResponseEntity<List<Master>> getMastersByServiceName(@PathVariable String serviceName) {
+    @Transactional
+    public ResponseEntity<List<MasterOptionDto>> getMastersByServiceName(@PathVariable String serviceName) {
+
         List<com.beautysalon.booking.entity.Service> services = serviceRepository.findByName(serviceName);
+
         if (services.isEmpty()) {
             return new ResponseEntity<>(List.of(), HttpStatus.OK);
         }
-        List<Master> availableMasters = services.stream()
+
+        List<MasterOptionDto> availableMasters = services.stream()
             .map(com.beautysalon.booking.entity.Service::getMaster)
             .filter(master -> master != null)
             .distinct()
+            .map(master -> new MasterOptionDto(
+                master.getMasterId(),
+                master.getUser().getName(),
+                master.getSpecialization(),
+                master.getFormattedRating()
+            ))
             .collect(Collectors.toList());
         return new ResponseEntity<>(availableMasters, HttpStatus.OK);
     }
+
     @GetMapping("/slots/available")
     @ResponseBody
     public ResponseEntity<List<String>> getAvailableTimeSlots(
@@ -209,5 +222,27 @@ public class BookingWebController {
     public ResponseEntity<List<LocalDate>> getMasterWorkingDates(@PathVariable UUID masterId) {
         List<LocalDate> workingDates = bookingService.getMasterWorkingDates(masterId);
         return new ResponseEntity<>(workingDates, HttpStatus.OK);
+    }
+    @GetMapping("/masters/{masterId}/bookings")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getMasterBookingsByDate(
+            @PathVariable UUID masterId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<Booking> bookings = bookingService.getBookingsByMasterAndDate(masterId, date);
+
+        List<Map<String, Object>> response = new ArrayList<>();
+
+        for (Booking b : bookings) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("bookingId", b.getBookingId());
+            map.put("time", b.getBookingTime().toString());
+            map.put("clientName", b.getClient().getName());
+            map.put("clientPhone", b.getClient().getPhone());
+            map.put("serviceName", b.getService().getName());
+            map.put("price", b.getTotalPrice());
+            map.put("status", b.getStatus().name());
+            response.add(map);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -126,7 +126,13 @@
                         masters.forEach(master => {
                             const option = document.createElement('option');
                             option.value = master.masterId;
-                            option.textContent = master.user.name + ' (' + master.specialization + ')';
+                            let text = master.fullName + ' (' + master.specialization + ')';
+
+                            if (master.rating && master.rating !== '-') {
+                                text += ' ⭐️ ' + master.rating;
+                            }
+
+                            option.textContent = text;
                             masterSelect.appendChild(option);
                         });
                         if (masterSelect.options.length === 2) {

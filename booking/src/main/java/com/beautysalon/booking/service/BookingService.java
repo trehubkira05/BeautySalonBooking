@@ -189,6 +189,10 @@ public class BookingService {
         return serviceRepository.save(service);
     }
 
+    public List<Booking> getBookingsByMasterAndDate(UUID masterId, LocalDate date) {
+        return bookingRepository.findByMasterMasterIdAndBookingDate(masterId, date);
+    }
+
     public void deleteService(UUID serviceId) {
         serviceRepository.deleteById(serviceId);
     }

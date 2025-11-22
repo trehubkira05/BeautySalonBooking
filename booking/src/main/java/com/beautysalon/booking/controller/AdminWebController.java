@@ -69,9 +69,11 @@ public class AdminWebController {
         }
         var clients = userService.getUsersByRole(Role.CLIENT);
         var masters = userService.getUsersByRole(Role.MASTER);
+        var banned = userService.getUsersByRole(Role.BANNED);
         model.addAttribute("clients", clients);
         model.addAttribute("masters", masters);
         model.addAttribute("admin", loggedInUser);
+        model.addAttribute("banned", banned);
         return "admin_users_list";
     }
 
