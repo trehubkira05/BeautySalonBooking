@@ -12,6 +12,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "services")
 public class Service implements BookableItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.CHAR)
@@ -55,7 +56,7 @@ public class Service implements BookableItem {
     public int getDurationMinutes() {
         return durationMinutes;
     }
-
+   
     public UUID getServiceId() {
         return serviceId;
     }

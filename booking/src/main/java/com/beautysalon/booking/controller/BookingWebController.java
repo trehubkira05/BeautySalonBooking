@@ -223,6 +223,7 @@ public class BookingWebController {
         List<LocalDate> workingDates = bookingService.getMasterWorkingDates(masterId);
         return new ResponseEntity<>(workingDates, HttpStatus.OK);
     }
+
     @GetMapping("/masters/{masterId}/bookings")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> getMasterBookingsByDate(

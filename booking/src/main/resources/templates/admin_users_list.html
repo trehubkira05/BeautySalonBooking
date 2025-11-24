@@ -1,4 +1,44 @@
-<!-- 1. ТАБЛИЦЯ МАЙСТРІВ -->
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Користувачі | Адмін</title>
+    <link rel="stylesheet" href="/css/beauty-salon.css">
+    <style>
+        .admin-table-header { background-color: #343a40; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;}
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #e9ecef; color: #495057; }
+        h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }
+        
+        /* Бейджі ролей */
+        .role-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; color: white; font-weight: bold; }
+        .badge-master { background-color: #6f42c1; }
+        .badge-client { background-color: #28a745; }
+        .badge-banned { background-color: #dc3545; } /* Червоний для бану */
+        
+        /* Кнопки дій */
+        .btn-action { border: none; cursor: pointer; padding: 6px 12px; border-radius: 4px; color: white; font-size: 13px; text-decoration: none; display: inline-block;}
+        .btn-confirm { background-color: #28a745; } /* Зелена */
+        .btn-cancel { background-color: #ffc107; color: black; } /* Жовта */
+        .btn-ban { background-color: #dc3545; color: white; border: none; cursor: pointer; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold;}
+        .btn-unban { background-color: #17a2b8; color: white; border: none; cursor: pointer; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold;}
+        
+        .btn-ban:hover { background-color: #c82333; }
+        .btn-unban:hover { background-color: #138496; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-card" style="width: 90%; max-width: 1200px;">
+        <div class="content">
+            
+            <div class="admin-table-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h1>Управління користувачами</h1>
+                    <a href="/auth/admin/dashboard" class="btn-primary" style="background-color: #6c757d; text-decoration: none;">← Назад</a>
+                </div>
+            </div>
+            <!-- 1. ТАБЛИЦЯ МАЙСТРІВ -->
             <h2>Список Майстрів (Master)</h2>
             <div th:if="${#lists.isEmpty(masters)}"><p>Майстрів немає.</p></div>
             <table th:if="${not #lists.isEmpty(masters)}">

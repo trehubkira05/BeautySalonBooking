@@ -9,7 +9,7 @@ public class ScheduleDayDto {
     private final boolean isWorking;
     private final LocalTime startTime;
     private final LocalTime endTime;
-    private final UUID scheduleId; // Для редагування
+    private final UUID scheduleId; 
 
     // Конструктор для робочого дня
     public ScheduleDayDto(Schedule schedule) {

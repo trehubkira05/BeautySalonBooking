@@ -14,6 +14,6 @@ public class BookingApplication {
 
     @Bean
     public Booking testBooking() {
-        return new Booking(); // Для тестів
+        return new Booking(); 
     }
 }

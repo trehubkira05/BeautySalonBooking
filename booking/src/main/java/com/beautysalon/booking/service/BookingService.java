@@ -3,6 +3,7 @@ package com.beautysalon.booking.service;
 import com.beautysalon.booking.entity.*;
 import com.beautysalon.booking.repository.IBookingRepository;
 import com.beautysalon.booking.repository.IMasterRepository;
+import com.beautysalon.booking.repository.IReviewRepository;
 import com.beautysalon.booking.repository.IScheduleRepository;
 import com.beautysalon.booking.repository.IServiceRepository;
 import com.beautysalon.booking.repository.IUserRepository;
@@ -12,7 +13,6 @@ import com.beautysalon.booking.composite.ServicePackage;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import com.beautysalon.booking.repository.IReviewRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,9 +26,9 @@ public class BookingService {
     private final IBookingValidationHandler validationChain;
     private final BookingEventPublisher eventPublisher;
     private final PaymentFacade paymentFacade;
-    private final IReviewRepository reviewRepository;
     private final IServiceRepository serviceRepository;
     private final IScheduleRepository scheduleRepository;
+    private final IReviewRepository reviewRepository;
 
     public BookingService(
             IBookingRepository bookingRepository,
@@ -36,15 +36,15 @@ public class BookingService {
             IServiceRepository serviceRepository,
             IMasterRepository masterRepository,
             IScheduleRepository scheduleRepository,
-            BookingEventPublisher eventPublisher,
             IReviewRepository reviewRepository,
+            BookingEventPublisher eventPublisher,
             @Lazy PaymentFacade paymentFacade) {
         this.bookingRepository = bookingRepository;
         this.serviceRepository = serviceRepository;
         this.scheduleRepository = scheduleRepository;
+        this.reviewRepository = reviewRepository;
         this.eventPublisher = eventPublisher;
         this.paymentFacade = paymentFacade;
-        this.reviewRepository = reviewRepository;
 
         IBookingValidationHandler clientHandler = new ClientExistenceHandler(userRepository);
         IBookingValidationHandler masterHandler = new MasterExistenceHandler(masterRepository);
@@ -54,6 +54,7 @@ public class BookingService {
         clientHandler.setNext(masterHandler);
         masterHandler.setNext(serviceHandler);
         serviceHandler.setNext(compatibilityHandler);
+
         this.validationChain = clientHandler;
     }
 
@@ -68,12 +69,10 @@ public class BookingService {
     public Set<LocalTime> getOccupiedSlots(UUID masterId, LocalDate date) {
         List<Booking> bookings = bookingRepository.findByMasterMasterIdAndBookingDate(masterId, date);
         Set<LocalTime> occupiedSlots = new HashSet<>();
-
         for (Booking booking : bookings) {
             if (booking.getStatus() == BookingStatus.CANCELLED) {
                 continue;
             }
-
             int durationMinutes = booking.getService().getDurationMinutes();
             LocalTime startTime = booking.getBookingTime().truncatedTo(ChronoUnit.HOURS);
             int numberOfSlots = durationMinutes / 60;
@@ -83,7 +82,6 @@ public class BookingService {
         }
 
         List<Schedule> masterSchedules = scheduleRepository.findByMasterMasterIdAndWorkDate(masterId, date);
-
         if (masterSchedules.isEmpty()) {
             return getAllPossibleSlots();
         }
@@ -91,9 +89,7 @@ public class BookingService {
         Schedule schedule = masterSchedules.get(0);
         LocalTime workStart = schedule.getStartTime();
         LocalTime workEnd = schedule.getEndTime();
-
         Set<LocalTime> allPossibleSlots = getAllPossibleSlots();
-
         for (LocalTime slot : allPossibleSlots) {
             int minServiceDurationHours = 1;
             LocalTime slotEnd = slot.plusHours(minServiceDurationHours);
@@ -101,7 +97,6 @@ public class BookingService {
                 occupiedSlots.add(slot);
             }
         }
-
         return occupiedSlots;
     }
 
@@ -118,14 +113,11 @@ public class BookingService {
 
         BookableItem finalItem;
         BookableItem baseService = context.getService();
-
         if (allInclusive) {
             ServicePackage vipPackage = new ServicePackage("VIP-пакет: " + baseService.getName());
             vipPackage.addItem(baseService);
-
             com.beautysalon.booking.entity.Service addons =
                 new com.beautysalon.booking.entity.Service("VIP-додатки (Косметика, Масаж, Напої)", "All Inclusive", 200, 15);
-
             vipPackage.addItem(addons);
             finalItem = vipPackage;
         } else {
@@ -185,12 +177,11 @@ public class BookingService {
         return bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "bookingDate", "bookingTime"));
     }
 
-    public com.beautysalon.booking.entity.Service addService(com.beautysalon.booking.entity.Service service) {
-        return serviceRepository.save(service);
-    }
-
     public List<Booking> getBookingsByMasterAndDate(UUID masterId, LocalDate date) {
         return bookingRepository.findByMasterMasterIdAndBookingDate(masterId, date);
+    }
+    public com.beautysalon.booking.entity.Service addService(com.beautysalon.booking.entity.Service service) {
+        return serviceRepository.save(service);
     }
 
     public void deleteService(UUID serviceId) {
@@ -204,6 +195,7 @@ public class BookingService {
     public void notifyPaymentObservers(Booking booking) {
         eventPublisher.notifyObservers(booking);
     }
+
     public Optional<Booking> getBookingByMasterAndDateTime(UUID masterId, LocalDate date, LocalTime time) {
         return bookingRepository.findByMasterMasterIdAndBookingDateAndBookingTime(masterId, date, time);
     }
@@ -211,6 +203,7 @@ public class BookingService {
     public Optional<Booking> findBookingById(UUID id) {
         return bookingRepository.findById(id);
     }
+
     public void addReview(UUID bookingId, int rating, String comment) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Бронювання не знайдено"));
