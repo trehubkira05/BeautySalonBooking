@@ -38,6 +38,7 @@
                     <a href="/auth/admin/dashboard" class="btn-primary" style="background-color: #6c757d; text-decoration: none;">← Назад</a>
                 </div>
             </div>
+
             <!-- 1. ТАБЛИЦЯ МАЙСТРІВ -->
             <h2>Список Майстрів (Master)</h2>
             <div th:if="${#lists.isEmpty(masters)}"><p>Майстрів немає.</p></div>
@@ -65,7 +66,7 @@
                                 </form>
                                 <!-- БАН -->
                                 <form th:action="@{/web/admin/users/{id}/change-role(id=${m.userId}, role='BANNED')}" method="post" onsubmit="return confirm('ЗАБЛОКУВАТИ цього користувача?');">
-                                    <button type="submit" class="btn-ban">⛔️ BAN</button>
+                                    <button type="submit" class="btn-ban">⛔ BAN</button>
                                 </form>
                                 <!-- Розклад -->
                                 <a th:href="@{/web/admin/masters/{id}/schedule(id=${m.userId})}" class="btn-action btn-confirm" style="background-color: #007bff;">Розклад</a>
@@ -102,13 +103,14 @@
                                 </form>
                                 <!-- БАН -->
                                 <form th:action="@{/web/admin/users/{id}/change-role(id=${c.userId}, role='BANNED')}" method="post" onsubmit="return confirm('ЗАБЛОКУВАТИ цього користувача?');">
-                                    <button type="submit" class="btn-ban">⛔️ BAN</button>
+                                    <button type="submit" class="btn-ban">⛔ BAN</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
+
             <!-- 3. ТАБЛИЦЯ ЗАБЛОКОВАНИХ (НОВЕ) -->
             <h2 style="color: #dc3545;">🚫 Заблоковані користувачі</h2>
             <div th:if="${#lists.isEmpty(banned)}"><p>Заблокованих користувачів немає.</p></div>

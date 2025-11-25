@@ -43,6 +43,7 @@ public class User {
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings;
 
+    // === Конструктори ===
     public User() {}
 
     public User(String name, String email, String password, String phone) {
@@ -52,6 +53,7 @@ public class User {
         this.phone = phone;
     }
 
+    // === Геттери та сеттери ===
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }
     public String getName() { return name; }

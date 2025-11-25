@@ -90,6 +90,7 @@
                 <th:block th:with="firstDayOfMonth=${currentMonth.atDay(1)}">
                     <div th:each="i : ${#numbers.sequence(1, firstDayOfMonth.getDayOfWeek().getValue() - 1)}"></div>
                 </th:block>
+
                 <div th:each="day : ${monthlySchedule}" 
                      th:classappend="${day.working ? 'day-working' : 'day-off'}" 
                      class="day-box">

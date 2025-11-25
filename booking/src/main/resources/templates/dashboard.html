@@ -123,6 +123,7 @@
         }
 
         .rating input { display: none; }
+
         .rating label {
             font-size: 30px;
             color: #ccc;
@@ -207,6 +208,7 @@
                                         th:onclick="openPaymentModal([[${booking.bookingId}]], [[${booking.totalPrice}]])">
                                     Оплатити
                                 </button>
+
                                 <form th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'COMPLETED'}"
                                       th:action="@{/web/bookings/{id}/cancel(id=${booking.bookingId})}" method="post">
                                     <button type="submit" class="btn-action btn-cancel">Скасувати</button>
@@ -259,6 +261,7 @@
             </div>
         </div>
     </div>
+
     <div id="reviewModal" class="modal-overlay">
         <div class="modal-content" style="background: white; padding: 30px; border-radius: 10px; width: 400px; text-align: center;">
             <span class="close-btn" onclick="closeReviewModal()" style="color: #333; top: 10px; right: 15px;">&times;</span>

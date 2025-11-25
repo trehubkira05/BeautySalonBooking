@@ -6,5 +6,5 @@ import java.util.UUID;
 import java.util.Optional;
 
 public interface IMasterRepository extends JpaRepository<Master, UUID> {
-  Optional<Master> findByUserUserId(UUID userId);  
+    Optional<Master> findByUserUserId(UUID userId);
 }

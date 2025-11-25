@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Configuration;
 public class ObserverConfig {
 
     @Autowired
-    private BookingEventPublisher publisher;
+    private BookingEventPublisher publisher; // Наш "Суб'єкт"
 
     @Autowired
-    private EmailObserver emailObserver;
+    private EmailObserver emailObserver; // Наш спостерігач №1
 
     @Autowired
-    private SmsObserver smsObserver;
+    private SmsObserver smsObserver; // Наш спостерігач №2
 
     @PostConstruct
     public void registerObservers() {

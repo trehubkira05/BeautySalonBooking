@@ -65,6 +65,7 @@
                 <th:block th:with="firstDayOfMonth=${currentMonth.atDay(1)}">
                     <div th:each="i : ${#numbers.sequence(1, firstDayOfMonth.getDayOfWeek().getValue() - 1)}"></div>
                 </th:block>
+
                 <!-- Цикл днів -->
                 <div th:each="day : ${monthlySchedule}" 
                      th:classappend="${day.working ? 'day-working' : 'day-off'}" 
@@ -128,7 +129,7 @@
             const table = document.getElementById('bookingsTable');
 
             // 3. AJAX Запит
-            fetch(/web/bookings/masters/${MASTER_ID}/bookings?date=${date})
+            fetch(`/web/bookings/masters/${MASTER_ID}/bookings?date=${date}`)
                 .then(response => response.json())
                 .then(data => {
                     tableBody.innerHTML = ''; // Очистити таблицю
@@ -142,6 +143,7 @@
                         
                         // Сортуємо за часом
                         data.sort((a, b) => a.time.localeCompare(b.time));
+
                         data.forEach(booking => {
                             const row = document.createElement('tr');
                             

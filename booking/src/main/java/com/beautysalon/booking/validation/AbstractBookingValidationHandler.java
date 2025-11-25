@@ -14,7 +14,7 @@ public abstract class AbstractBookingValidationHandler implements IBookingValida
             this.nextHandler.handle(context);
         }
     }
-
+ 
     @Override
     public abstract void handle(BookingValidationContext context);
 }

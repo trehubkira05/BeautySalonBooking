@@ -117,7 +117,7 @@
                                 <span th:if="${s.master == null}">Не прив'язано</span>
                             </td>
                             <td>
-                                <a th:href="@{/web/admin/services/edit/{id}(id=${s.serviceId})}" class="btn-action btn-pay" style="padding: 5px 10px; margin-right: 5px;">Редагувати</a>
+                               <a th:href="@{/web/admin/services/edit/{id}(id=${s.serviceId})}" class="btn-action btn-pay" style="padding: 5px 10px; margin-right: 5px;">Редагувати</a>
                                <form th:action="@{/web/admin/services/delete/{id}(id=${s.serviceId})}" method="post" onsubmit="return confirm('Видалити послугу ' + [[${s.name}]] + ' від ' + [[${s.master.user.name}]] + '?');" style="display: inline-block;">
                                    <button type="submit" class="btn-action btn-cancel" style="padding: 5px 10px;">Видалити</button>
                                </form>

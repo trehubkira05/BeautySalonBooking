@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @Service
 public class UserService {
+
     private final IUserRepository userRepository;
     private final IMasterRepository masterRepository;
 

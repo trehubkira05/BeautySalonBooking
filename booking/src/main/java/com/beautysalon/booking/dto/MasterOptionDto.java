@@ -6,8 +6,7 @@ public class MasterOptionDto {
     private UUID masterId;
     private String fullName;
     private String specialization;
-    private String rating;
-
+    private String rating; 
 
     public MasterOptionDto(UUID masterId, String fullName, String specialization, String rating) {
         this.masterId = masterId;
@@ -18,6 +17,6 @@ public class MasterOptionDto {
 
     public UUID getMasterId() { return masterId; }
     public String getFullName() { return fullName; }
-    public String getSpecialization() { return specialization;}
-    public String getRating() { return rating; }
+    public String getSpecialization() { return specialization; }
+    public String getRating() { return rating; } 
 }

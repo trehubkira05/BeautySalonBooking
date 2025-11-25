@@ -54,7 +54,6 @@ public class BookingService {
         clientHandler.setNext(masterHandler);
         masterHandler.setNext(serviceHandler);
         serviceHandler.setNext(compatibilityHandler);
-
         this.validationChain = clientHandler;
     }
 
@@ -69,10 +68,12 @@ public class BookingService {
     public Set<LocalTime> getOccupiedSlots(UUID masterId, LocalDate date) {
         List<Booking> bookings = bookingRepository.findByMasterMasterIdAndBookingDate(masterId, date);
         Set<LocalTime> occupiedSlots = new HashSet<>();
+
         for (Booking booking : bookings) {
             if (booking.getStatus() == BookingStatus.CANCELLED) {
                 continue;
             }
+
             int durationMinutes = booking.getService().getDurationMinutes();
             LocalTime startTime = booking.getBookingTime().truncatedTo(ChronoUnit.HOURS);
             int numberOfSlots = durationMinutes / 60;
@@ -82,6 +83,7 @@ public class BookingService {
         }
 
         List<Schedule> masterSchedules = scheduleRepository.findByMasterMasterIdAndWorkDate(masterId, date);
+
         if (masterSchedules.isEmpty()) {
             return getAllPossibleSlots();
         }
@@ -89,14 +91,18 @@ public class BookingService {
         Schedule schedule = masterSchedules.get(0);
         LocalTime workStart = schedule.getStartTime();
         LocalTime workEnd = schedule.getEndTime();
+
         Set<LocalTime> allPossibleSlots = getAllPossibleSlots();
+
         for (LocalTime slot : allPossibleSlots) {
             int minServiceDurationHours = 1;
             LocalTime slotEnd = slot.plusHours(minServiceDurationHours);
+
             if (slot.isBefore(workStart) || slotEnd.isAfter(workEnd)) {
                 occupiedSlots.add(slot);
             }
         }
+
         return occupiedSlots;
     }
 
@@ -113,11 +119,14 @@ public class BookingService {
 
         BookableItem finalItem;
         BookableItem baseService = context.getService();
+
         if (allInclusive) {
             ServicePackage vipPackage = new ServicePackage("VIP-пакет: " + baseService.getName());
             vipPackage.addItem(baseService);
+
             com.beautysalon.booking.entity.Service addons =
                 new com.beautysalon.booking.entity.Service("VIP-додатки (Косметика, Масаж, Напої)", "All Inclusive", 200, 15);
+
             vipPackage.addItem(addons);
             finalItem = vipPackage;
         } else {
@@ -180,6 +189,7 @@ public class BookingService {
     public List<Booking> getBookingsByMasterAndDate(UUID masterId, LocalDate date) {
         return bookingRepository.findByMasterMasterIdAndBookingDate(masterId, date);
     }
+
     public com.beautysalon.booking.entity.Service addService(com.beautysalon.booking.entity.Service service) {
         return serviceRepository.save(service);
     }

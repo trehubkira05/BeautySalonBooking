@@ -1,4 +1,5 @@
 package com.beautysalon.booking.dto;
+
 import com.beautysalon.booking.entity.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -9,7 +10,7 @@ public class ScheduleDayDto {
     private final boolean isWorking;
     private final LocalTime startTime;
     private final LocalTime endTime;
-    private final UUID scheduleId; 
+    private final UUID scheduleId; // Для редагування
 
     // Конструктор для робочого дня
     public ScheduleDayDto(Schedule schedule) {

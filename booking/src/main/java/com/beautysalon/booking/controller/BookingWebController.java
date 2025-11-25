@@ -78,7 +78,8 @@ public class BookingWebController {
             .map(s -> s.getServiceId())
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Не вдалося знайти конкретну послугу, прив'язану до обраного майстра."));
-            try {
+
+        try {
             bookingService.createBooking(user.getUserId(), finalServiceId, masterId, finalDateTime, allInclusive);
             return "redirect:/auth/home";
         } catch (Exception e) {
@@ -162,6 +163,7 @@ public class BookingWebController {
         }
         return "redirect:/auth/home";
     }
+
     @GetMapping("/masters/by-service/{serviceId}")
     @ResponseBody
     public ResponseEntity<List<Master>> getMastersByService(@PathVariable UUID serviceId) {

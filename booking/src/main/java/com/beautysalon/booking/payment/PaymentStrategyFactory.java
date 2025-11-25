@@ -17,11 +17,13 @@ public class PaymentStrategyFactory {
     }
 
     public PaymentStrategy getStrategy(String paymentId) {
+        // Використовуємо дефолтну стратегію, якщо ID не передано або не знайдено
         String key = (paymentId != null) ? paymentId.toUpperCase() : "CARD";
         
         PaymentStrategy strategy = strategies.get(key);
         
         if (strategy == null) {
+             // Фолбек на CARD, якщо передали щось невідоме
              return strategies.get("CARD");
         }
         return strategy;

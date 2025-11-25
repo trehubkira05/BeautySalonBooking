@@ -1,6 +1,8 @@
 package com.beautysalon.booking.entity;
 
+// === Зміни для ЛР8 (Composite) ===
 import com.beautysalon.booking.composite.BookableItem;
+// === Кінець змін ===
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -11,8 +13,9 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "services")
+// === Зміни для ЛР8 (Composite) ===
 public class Service implements BookableItem {
-
+// === Кінець змін ===
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.CHAR)
@@ -33,6 +36,7 @@ public class Service implements BookableItem {
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
+    // Конструктори
     public Service() {}
 
     public Service(String name, String description, double price, int durationMinutes) {
@@ -42,6 +46,7 @@ public class Service implements BookableItem {
         this.durationMinutes = durationMinutes;
     }
 
+    // === Реалізація інтерфейсу BookableItem (ЛР8) ===
     @Override
     public String getName() {
         return name;
@@ -56,7 +61,9 @@ public class Service implements BookableItem {
     public int getDurationMinutes() {
         return durationMinutes;
     }
-   
+    // === Кінець змін ===
+
+    // Геттери та Сеттери (решта)
     public UUID getServiceId() {
         return serviceId;
     }

@@ -90,6 +90,7 @@ public class BookingController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
     @PutMapping("/{bookingId}/cancel-with-refund")
     public ResponseEntity<String> cancelBookingWithRefund(@PathVariable UUID bookingId) {
         try {

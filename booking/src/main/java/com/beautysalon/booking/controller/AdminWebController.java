@@ -72,8 +72,8 @@ public class AdminWebController {
         var banned = userService.getUsersByRole(Role.BANNED);
         model.addAttribute("clients", clients);
         model.addAttribute("masters", masters);
-        model.addAttribute("admin", loggedInUser);
         model.addAttribute("banned", banned);
+        model.addAttribute("admin", loggedInUser);
         return "admin_users_list";
     }
 
@@ -83,6 +83,7 @@ public class AdminWebController {
         userService.updateUserRole(id, newRole);
         return "redirect:/web/admin/users";
     }
+
     @GetMapping("/services")
     @Transactional
     public String showAllServices(HttpSession session, Model model) {
@@ -153,6 +154,7 @@ public class AdminWebController {
 
         return "admin_master_schedule";
     }
+
     @GetMapping("/masters/{userId}/schedule/{scheduleIdOrNew}/edit")
     public String showEditScheduleForm(
             @PathVariable UUID userId,
