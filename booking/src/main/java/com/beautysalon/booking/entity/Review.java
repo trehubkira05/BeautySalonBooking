@@ -15,7 +15,7 @@ public class Review {
     @JdbcTypeCode(SqlTypes.CHAR)
     private UUID reviewId;
 
-    private int rating; // 1-5
+    private int rating; 
     private String comment;
     private LocalDateTime createdAt;
 
@@ -32,7 +32,6 @@ public class Review {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Геттери та сеттери
     public UUID getReviewId() { return reviewId; }
     public void setReviewId(UUID reviewId) { this.reviewId = reviewId; }
     public int getRating() { return rating; }

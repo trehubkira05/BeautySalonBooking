@@ -13,7 +13,6 @@ public class CardPaymentStrategy implements PaymentStrategy {
     @Override
     public boolean processPayment(double amount, String cardNumber) {
         if (amount > 0) {
-            // Беремо останні 4 цифри для логу, перевіряючи довжину
             String maskedCard = cardNumber.length() >= 4 
                 ? cardNumber.substring(cardNumber.length() - 4) 
                 : cardNumber;

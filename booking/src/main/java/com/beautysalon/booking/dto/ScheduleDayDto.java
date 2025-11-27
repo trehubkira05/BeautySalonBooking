@@ -10,9 +10,8 @@ public class ScheduleDayDto {
     private final boolean isWorking;
     private final LocalTime startTime;
     private final LocalTime endTime;
-    private final UUID scheduleId; // Для редагування
+    private final UUID scheduleId; 
 
-    // Конструктор для робочого дня
     public ScheduleDayDto(Schedule schedule) {
         this.date = schedule.getWorkDate();
         this.isWorking = true;
@@ -21,7 +20,6 @@ public class ScheduleDayDto {
         this.scheduleId = schedule.getScheduleId();
     }
 
-    // Конструктор для вихідного дня
     public ScheduleDayDto(LocalDate date) {
         this.date = date;
         this.isWorking = false;
@@ -30,7 +28,6 @@ public class ScheduleDayDto {
         this.scheduleId = null;
     }
 
-    // --- Гетери ---
     public LocalDate getDate() { return date; }
     public boolean isWorking() { return isWorking; }
     public LocalTime getStartTime() { return startTime; }

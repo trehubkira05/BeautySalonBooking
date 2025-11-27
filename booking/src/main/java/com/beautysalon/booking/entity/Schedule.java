@@ -30,7 +30,6 @@ public class Schedule {
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    // Конструктори
     public Schedule() {}
 
     public Schedule(Master master, LocalDate workDate, LocalTime startTime, LocalTime endTime) {
@@ -40,7 +39,6 @@ public class Schedule {
         this.endTime = endTime;
     }
 
-    // Геттери та Сеттери
     public UUID getScheduleId() {
         return scheduleId;
     }

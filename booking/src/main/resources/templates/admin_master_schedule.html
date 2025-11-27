@@ -8,7 +8,7 @@
         .schedule-header { background-color: #007bff; color: white; padding: 15px; border-radius: 6px; }
         .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 7 днів тижня */
+            grid-template-columns: repeat(7, 1fr); 
             gap: 5px;
             margin-top: 20px;
         }
@@ -40,11 +40,10 @@
             text-align: center;
             flex-grow: 1;
         }
-        /* Стилі стану */
         .day-working { background-color: #e6ffed; border-color: #28a745; }
         .day-off { background-color: #f8f8f8; color: #999; }
-        .status-off { color: #dc3545; font-weight: bold; } /* Червоний для вихідного */
-        .status-working { color: #28a745; font-weight: bold; } /* Зелений для робочого */
+        .status-off { color: #dc3545; font-weight: bold; }
+        .status-working { color: #28a745; font-weight: bold; } 
         
         .action-link {
              font-size: 12px; 

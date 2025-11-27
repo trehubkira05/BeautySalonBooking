@@ -4,9 +4,6 @@ import com.beautysalon.booking.entity.User;
 import com.beautysalon.booking.repository.IUserRepository;
 import java.util.Optional;
 
-/**
- * Конкретний обробник: перевіряє, чи існує клієнт.
- */
 public class ClientExistenceHandler extends AbstractBookingValidationHandler {
 
     private final IUserRepository userRepository;
@@ -20,10 +17,9 @@ public class ClientExistenceHandler extends AbstractBookingValidationHandler {
         Optional<User> client = userRepository.findById(context.getClientId());
 
         if (client.isPresent()) {
-            context.setClient(client.get()); // Збагачуємо контекст
-            handleNext(context); // Передаємо далі
+            context.setClient(client.get()); 
+            handleNext(context); 
         } else {
-            // Зупиняємо ланцюжок
             context.setErrorMessage("Клієнт не знайдений.");
         }
     }

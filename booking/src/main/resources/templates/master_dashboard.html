@@ -7,7 +7,6 @@
     <style>
         .master-header { background-color: #6f42c1; color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px;}
         
-        /* КАЛЕНДАР */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
         .day-header { text-align: center; font-weight: bold; padding: 10px 0; background-color: #f4f4f4; border-radius: 4px 4px 0 0; }
         
@@ -18,20 +17,17 @@
         }
         .day-date { font-weight: bold; text-align: right; }
         
-        /* СТАТУСИ ДНІВ */
         .day-working { background-color: #e6ffed; border: 1px solid #28a745; color: #155724; }
         .day-working:hover { background-color: #c3e6cb; transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .day-working.selected { background-color: #28a745; color: white; border-color: #1e7e34; }
 
         .day-off { background-color: #f8f9fa; color: #ccc; cursor: not-allowed; }
         
-        /* ТАБЛИЦЯ */
         #bookingsSection { display: none; margin-top: 30px; animation: fadeIn 0.5s; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
         th { background-color: #f1f1f1; }
         
-        /* Статуси в таблиці */
         .status-PENDING { color: orange; font-weight: bold; }
         .status-CONFIRMED { color: blue; font-weight: bold; }
         .status-PAID { color: green; font-weight: bold; }
@@ -49,14 +45,12 @@
                 <p>Вітаємо, <span th:text="${master.user.name}">Master</span>!</p>
             </div>
 
-            <!-- НАВІГАЦІЯ КАЛЕНДАРЕМ -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <a th:href="@{/auth/master/dashboard(month=${prevMonth})}" class="btn-primary" style="background-color: #6c757d; padding: 5px 10px; text-decoration: none;">← Попередній</a>
                 <h3 th:text="${#temporals.format(currentMonth.atDay(1), 'MMMM yyyy')}" style="margin: 0; text-transform: capitalize;"></h3>
                 <a th:href="@{/auth/master/dashboard(month=${nextMonth})}" class="btn-primary" style="background-color: #6c757d; padding: 5px 10px; text-decoration: none;">Наступний →</a>
             </div>
 
-            <!-- КАЛЕНДАР -->
             <div class="calendar-grid">
                 <div class="day-header">ПН</div><div class="day-header">ВТ</div><div class="day-header">СР</div>
                 <div class="day-header">ЧТ</div><div class="day-header">ПТ</div>
@@ -66,7 +60,6 @@
                     <div th:each="i : ${#numbers.sequence(1, firstDayOfMonth.getDayOfWeek().getValue() - 1)}"></div>
                 </th:block>
 
-                <!-- Цикл днів -->
                 <div th:each="day : ${monthlySchedule}" 
                      th:classappend="${day.working ? 'day-working' : 'day-off'}" 
                      class="day-box"
@@ -81,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- СЕКЦІЯ БРОНЮВАНЬ (З'являється при кліку) -->
             <div id="bookingsSection">
                 <h3 style="border-bottom: 2px solid #6f42c1; padding-bottom: 10px;">
                     Записи на <span id="selectedDateText"></span>
@@ -99,7 +91,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Сюди JS вставить рядки -->
                     </tbody>
                 </table>
                 <p id="noBookingsMsg" style="text-align: center; color: #777; display: none; padding: 20px;">
@@ -117,22 +108,19 @@
         const MASTER_ID = [[${master.masterId}]];
         
         function loadBookings(date, element) {
-            // 1. Візуальне виділення дня
             document.querySelectorAll('.day-working').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
 
-            // 2. Оновлення заголовку
             document.getElementById('selectedDateText').textContent = date;
             const section = document.getElementById('bookingsSection');
             const tableBody = document.querySelector('#bookingsTable tbody');
             const noBookingsMsg = document.getElementById('noBookingsMsg');
             const table = document.getElementById('bookingsTable');
 
-            // 3. AJAX Запит
             fetch(`/web/bookings/masters/${MASTER_ID}/bookings?date=${date}`)
                 .then(response => response.json())
                 .then(data => {
-                    tableBody.innerHTML = ''; // Очистити таблицю
+                    tableBody.innerHTML = ''; 
                     
                     if (data.length === 0) {
                         table.style.display = 'none';
@@ -141,13 +129,11 @@
                         table.style.display = 'table';
                         noBookingsMsg.style.display = 'none';
                         
-                        // Сортуємо за часом
                         data.sort((a, b) => a.time.localeCompare(b.time));
 
                         data.forEach(booking => {
                             const row = document.createElement('tr');
                             
-                            // Кнопка "Завершити" (тільки для PAID)
                             let actionHtml = '';
                             if (booking.status === 'PAID') {
                                 actionHtml = `
@@ -172,9 +158,7 @@
                             tableBody.appendChild(row);
                         });
                     }
-                    // Показати секцію
                     section.style.display = 'block';
-                    // Прокрутити до секції
                     section.scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(err => console.error('Помилка:', err));

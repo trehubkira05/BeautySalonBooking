@@ -54,7 +54,6 @@ public class UserService {
         try {
             userRepository.deleteById(UUID.fromString(id));
         } catch (IllegalArgumentException e) {
-            // ignore
         }
     }
 

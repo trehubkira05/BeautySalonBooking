@@ -26,9 +26,8 @@ public class EmailObserver implements IBookingObserver {
             String serviceName = booking.getService().getName();
             String masterName = booking.getMaster().getUser().getName();
             String bookingTime = booking.getBookingDate() + " о " + booking.getBookingTime();
-            String status = booking.getStatus().name(); // PENDING, CONFIRMED...
+            String status = booking.getStatus().name(); 
             
-            // 1. Перекладаємо статус на українську мову
             String statusUa = switch (status) {
                 case "PENDING" -> "Очікує підтвердження";
                 case "CONFIRMED" -> "Підтверджено";
@@ -49,10 +48,9 @@ public class EmailObserver implements IBookingObserver {
             text.append("Новий статус: ").append(statusUa.toUpperCase()).append("\n");
             text.append("--------------------------------------------------\n\n");
             
-            // Додаємо підказки залежно від статусу
             if ("CONFIRMED".equals(status)) {
                 text.append("✅ Ваше бронювання підтверджено! Будь ласка, перейдіть до особистого кабінету для оплати:\n");
-                text.append("http://localhost:8080/auth/login\n\n"); // Посилання на вхід
+                text.append("http://localhost:8080/auth/login\n\n"); 
             } else if ("PAID".equals(status)) {
                 text.append("💰 Оплата пройшла успішно. Чекаємо на вас у салоні!\n\n");
             } else if ("COMPLETED".equals(status)) {

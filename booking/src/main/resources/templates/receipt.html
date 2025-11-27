@@ -23,7 +23,6 @@
         .status-refunded { color: red; border: 2px solid red; display: inline-block; padding: 5px 10px; transform: rotate(-5deg); margin-top: 10px; }
         .status-paid { color: green; }
 
-        /* Кнопка друку, яка зникає на папері */
         @media print {
             .no-print { display: none; }
             body { background-color: white; padding: 0; }
@@ -85,7 +84,6 @@
             </div>
             <div class="info-row">
                 <span class="label">Картка:</span>
-                <!-- Тут покажемо маскований номер, якщо він є -->
                 <span th:text="${payment != null and payment.cardNumber != null ? '**** ' + #strings.substring(payment.cardNumber, payment.cardNumber.length() - 4) : '****'}"></span>
             </div>
             

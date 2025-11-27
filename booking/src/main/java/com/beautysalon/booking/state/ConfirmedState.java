@@ -13,12 +13,10 @@ public class ConfirmedState implements BookingState {
 
     @Override
     public void confirm(Booking booking) {
-        // Вже підтверджено, нічого не робимо
     }
 
     @Override
     public void pay(Booking booking) {
-        // Це дозволений перехід
         booking.setStatus(BookingStatus.PAID);
     }
 
