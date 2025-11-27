@@ -46,13 +46,6 @@
             justify-content: space-between;
         }
 
-        .card-chip {
-            width: 50px; height: 30px;
-            background-color: gold;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
         .card-form { display: flex; flex-direction: column; gap: 15px; }
         .input-group { display: flex; flex-direction: column; gap: 5px; }
         .input-group label { font-weight: bold; font-size: 12px; }
@@ -239,7 +232,6 @@
             <span class="close-btn" onclick="closePaymentModal()">&times;</span>
             <div class="card">
                 <div class="payment-amount" id="modalAmountDisplay">До сплати: 0 грн</div>
-                <div class="card-chip"></div>
                 <form id="cardForm" class="card-form" method="post">
                     <input type="hidden" name="paymentMethod" value="CARD">
                     <div class="input-group">
@@ -249,7 +241,13 @@
                     <div class="flex-row">
                         <div class="input-group half">
                             <label for="expiry-date">Термін дії</label>
-                            <input type="text" id="expiry-date" placeholder="MM/RR" required maxlength="5">
+                            <input type="text" 
+                            id="expiry-date" 
+                            placeholder="MM/YY" 
+                            required 
+                            maxlength="5"
+                            inputmode="numeric"
+                            autocomplete="cc-exp">
                         </div>
                         <div class="input-group half">
                             <label for="cvv">CVV</label>
@@ -321,6 +319,14 @@
 
         document.getElementById('card-number').addEventListener('input', function (e) {
             e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim();
+        });
+
+        document.getElementById('expiry-date').addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\D/g, ''); 
+            if (v.length >= 2) {
+                v = v.substring(0,2) + '/' + v.substring(2,4);
+            }
+            e.target.value = v.slice(0,5);
         });
     </script>
 </body>
