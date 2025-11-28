@@ -1,0 +1,18 @@
+1. Адміністратор
+admin@beauty.com 
+password: admin123
+2. Майстер 1
+master@beauty.com
+password: master123
+3. Майстер 2
+mary08@beauty.com
+password: mary888
+4. Майстер 3 
+irynafes@beauty.com
+password:ira12345
+5. Клієнт 1
+client@test.com
+password: client123
+6. Клієнт 2
+anna_mor@test.com
+password: anna33

@@ -133,16 +133,13 @@ public class AdminWebController {
         return "admin_service_form"; 
     }
 
-    // === РЕДАГУВАННЯ ПРОФІЛЮ МАЙСТРА (ВИПРАВЛЕНО) ===
-    
-    @GetMapping("/masters/{userId}/edit") // <-- Приймаємо userId
+    @GetMapping("/masters/{userId}/edit") 
     public String showEditMasterForm(@PathVariable UUID userId, HttpSession session, Model model) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null || loggedInUser.getRole() != Role.ADMIN) {
             return "redirect:/auth/login";
         }
 
-        // Знаходимо майстра за USER ID
         Master master = masterService.findMasterByUser(userId);
         model.addAttribute("master", master);
         
@@ -166,7 +163,6 @@ public class AdminWebController {
         return "redirect:/web/admin/users";
     }
 
-    // === РОЗКЛАД ===
 
     @GetMapping("/masters/{userId}/schedule")
     public String showMasterSchedule(@PathVariable UUID userId, 

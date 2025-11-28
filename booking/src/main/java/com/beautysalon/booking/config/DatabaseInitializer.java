@@ -17,13 +17,13 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final IMasterRepository masterRepository;
     private final IServiceRepository serviceRepository;
     private final IScheduleRepository scheduleRepository;
-    private final PasswordEncoder passwordEncoder; // <--- 1. Додали енкодер
+    private final PasswordEncoder passwordEncoder; 
 
     public DatabaseInitializer(IUserRepository userRepository,
                                IMasterRepository masterRepository,
                                IServiceRepository serviceRepository,
                                IScheduleRepository scheduleRepository,
-                               PasswordEncoder passwordEncoder) { // <--- 2. Інжектуємо його
+                               PasswordEncoder passwordEncoder) { 
         this.userRepository = userRepository;
         this.masterRepository = masterRepository;
         this.serviceRepository = serviceRepository;
@@ -34,11 +34,9 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Якщо база порожня - заповнюємо
         if (userRepository.count() == 0) {
             System.out.println("--- [DatabaseInitializer] База порожня. Створення даних... ---");
 
-            // 3. ВАЖЛИВО: Хешуємо паролі перед збереженням!
             String adminPass = passwordEncoder.encode("admin123");
             String masterPass = passwordEncoder.encode("master123");
             String clientPass = passwordEncoder.encode("client123");
@@ -47,7 +45,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             User admin = new User();
             admin.setName("Super Admin");
             admin.setEmail("admin@beauty.com");
-            admin.setPassword(adminPass); // <--- Зберігаємо ХЕШ
+            admin.setPassword(adminPass); 
             admin.setPhone("+380000000000");
             admin.setRole(Role.ADMIN);
             userRepository.save(admin);
@@ -56,7 +54,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             User masterUser = new User();
             masterUser.setName("Іванна Шевченко");
             masterUser.setEmail("master@beauty.com");
-            masterUser.setPassword(masterPass); // <--- Зберігаємо ХЕШ
+            masterUser.setPassword(masterPass); 
             masterUser.setPhone("+380991234567");
             masterUser.setRole(Role.MASTER);
             userRepository.save(masterUser);
@@ -71,7 +69,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             User client = new User();
             client.setName("Тестовий Клієнт");
             client.setEmail("client@test.com");
-            client.setPassword(clientPass); // <--- Зберігаємо ХЕШ
+            client.setPassword(clientPass); 
             client.setPhone("+380509876543");
             client.setRole(Role.CLIENT);
             userRepository.save(client);

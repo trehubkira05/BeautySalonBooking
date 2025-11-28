@@ -22,7 +22,6 @@ public class CancelledState implements BookingState {
 
     @Override
     public void cancel(Booking booking) {
-        // Вже скасовано, нічого не робимо
     }
 
     @Override

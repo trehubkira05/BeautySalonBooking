@@ -42,7 +42,6 @@ public class MasterService {
                 .orElseThrow(() -> new RuntimeException("Майстра не знайдено"));
     }
 
-    // === НОВИЙ МЕТОД ДЛЯ ОНОВЛЕННЯ ПРОФІЛЮ (Спеціалізація) ===
     @Transactional
     public void updateMasterProfile(UUID masterId, String specialization, int experience) {
         Master master = findMasterById(masterId);
@@ -54,8 +53,6 @@ public class MasterService {
     public List<Schedule> getMasterSchedule(UUID masterId) {
         return scheduleRepository.findAllByMasterMasterId(masterId);
     }
-    
-    // === МЕТОДИ ДЛЯ КАЛЕНДАРЯ ===
 
     public List<ScheduleDayDto> getMonthlyScheduleView(UUID masterId, YearMonth yearMonth) {
         LocalDate startDate = yearMonth.atDay(1);
@@ -107,7 +104,6 @@ public class MasterService {
         scheduleRepository.save(schedule);
     }
     
-    // Для сумісності зі старим кодом AdminController (якщо використовується)
     public Schedule setMasterWorkSchedule(UUID masterId, LocalDate workDate, LocalTime startTime, LocalTime endTime) {
         upsertSchedule(null, masterId, workDate, startTime, endTime);
         return scheduleRepository.findByMasterMasterIdAndWorkDate(masterId, workDate).stream().findFirst().orElse(null);

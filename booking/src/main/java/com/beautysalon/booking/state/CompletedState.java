@@ -27,6 +27,5 @@ public class CompletedState implements BookingState {
 
     @Override
     public void complete(Booking booking) {
-        // Вже завершено, нічого не робимо
     }
 }
